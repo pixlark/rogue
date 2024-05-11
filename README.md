@@ -1,5 +1,14 @@
 ### Building
 
-The project uses CMake top-to-bottom, so it should work fine no matter what platform you're on.
+```
+# On Windows
+cmake -B build -G Ninja
+ninja -C build install
 
-If you're on Windows, life is even easier. Just open a developer prompt and use `.\build.bat` to invoke cmake automatically.
+# On Mac/Linux
+cmake -B build -G Make
+cd build
+make install
+```
+
+This installs the game to `build/rogue`.

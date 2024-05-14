@@ -55,3 +55,15 @@ add_subdirectory(core)
 #
 
 install(DIRECTORY resources DESTINATION .)
+
+#
+# compile_commands
+#
+
+# add_custom_target(reformat-compile-database
+#     ALL
+#     COMMAND cmake -E cat build/compile-commands.json | python scripts/reformat-compile-database.py > build/compile-commands.json
+#     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#     COMMENT ${CMAKE_CURRENT_SOURCE_DIR}
+# )
+# add_dependencies(reformat-compile-database all)

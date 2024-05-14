@@ -19,8 +19,8 @@ set(SDL_FILESYSTEM_ENABLED_BY_DEFAULT true)
 set(SDL_SENSOR_ENABLED_BY_DEFAULT     false)
 set(SDL_LOCALE_ENABLED_BY_DEFAULT     false)
 set(SDL_MISC_ENABLED_BY_DEFAULT       false)
+add_subdirectory(SDL SYSTEM)
 
-add_subdirectory(SDL)
 add_subdirectory(stb_image)
 
 add_library(backend SHARED)

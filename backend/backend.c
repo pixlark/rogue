@@ -46,6 +46,12 @@ struct tileset_t {
     int fontset_sprite_mapping[256];
 };
 
+struct render_command_t {
+    SDL_Texture* texture;
+    SDL_Rect src;
+    SDL_Rect dest;
+};
+
 #define MAX_TILESETS 32
 struct context_t {
     SDL_Window* window;
@@ -59,6 +65,8 @@ struct context_t {
     struct tileset_t tilesets[MAX_TILESETS];
     int loaded_tilesets;
     int fallback_fontset;
+
+    struct render_command_t* screen_buffer;
 
     int keyboard_keys_count;
     uint8_t* last_frame_keyboard_state;
@@ -129,6 +137,17 @@ static void update_keyboard_state(struct context_t* context) {
     memcpy(context->this_frame_keyboard_state, keyboard_state, context->keyboard_keys_count);
 }
 
+static void flush_draw_commands(struct context_t* context) {
+    int viewport_width = context->configuration.viewport_width,
+        viewport_height = context->configuration.viewport_height;
+    for (int y = 0; y < viewport_height; y++) {
+        for (int x = 0; x < viewport_width; x++) {
+            struct render_command_t* command = &context->screen_buffer[y * viewport_width + x];
+            SDL_RenderCopy(context->renderer, command->texture, &command->src, &command->dest);
+        }
+    }
+}
+
 enum error_t start_game(
     int tile_width,
     int tile_height,
@@ -163,6 +182,11 @@ enum error_t start_game(
     if (err != 0) {
         return ERROR_SDL_FAILED_TO_INIT;
     }
+
+    context.screen_buffer = calloc(
+        configuration.viewport_width * configuration.viewport_height,
+        sizeof(struct render_command_t)
+    );
 
     if (load_callback != NULL) {
         load_callback(&context, game_data);
@@ -200,12 +224,14 @@ enum error_t start_game(
             update_callback(&context, game_data);
         }
 
-        SDL_SetRenderDrawColor(context.renderer, 0, 0, 0, 1);
-        SDL_RenderClear(context.renderer);
-
         if (draw_callback != NULL) {
             draw_callback(&context, game_data);
         }
+
+        SDL_SetRenderDrawColor(context.renderer, 0, 0, 0, 1);
+        SDL_RenderClear(context.renderer);
+
+        flush_draw_commands(&context);
 
         SDL_RenderPresent(context.renderer);
 
@@ -451,9 +477,11 @@ static enum error_t draw_tile_internal(
         sprite_w = tileset->tile_width,
         sprite_h = tileset->tile_height;
 
-    SDL_Rect src = { sprite_x, sprite_y, sprite_w, sprite_h };
-    SDL_Rect dest = get_tile_dest_rect(context, x, y);
-    SDL_RenderCopy(context->renderer, tileset->texture, &src, &dest);
+    struct render_command_t render_command;
+    render_command.texture = tileset->texture;
+    render_command.src = (SDL_Rect) { sprite_x, sprite_y, sprite_w, sprite_h };
+    render_command.dest = get_tile_dest_rect(context, x, y);
+    context->screen_buffer[y * viewport_width + x] = render_command;
     return ERROR_OK;
 }
 

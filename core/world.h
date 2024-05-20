@@ -1,18 +1,20 @@
 #pragma once
 
 #include "ascii.h"
-// #include "core.h"
 #include "services.h"
 #include "grid.h"
+#include "screen.h"
+
+class IWorldService {
+};
 
 enum class Wall {
-    DungeonStone,
+    DungeonRock,
+    DebugTile,
     Count,
 };
 
 int wall_sprite_index(Wall wall);
-
-class Screen;
 
 class World : public IWorldService {
     Grid<Wall> walls;

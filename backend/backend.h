@@ -2,7 +2,7 @@
 
 #include <stdarg.h>
 
-enum error_t {
+enum backend_error_t {
     ERROR_OK = 0,
     ERROR_SDL_FAILED_TO_INIT,
     ERROR_FILE_NOT_FOUND,
@@ -20,7 +20,7 @@ enum error_t {
     ERROR_NO_FALLBACK_CHARACTER,
 };
 
-const char *describe_error(enum error_t error);
+const char *describe_error(enum backend_error_t error);
 
 struct context_t;
 
@@ -32,7 +32,7 @@ void register_load(load_t load);
 void register_update(update_t update);
 void register_draw(draw_t draw);
 
-enum error_t start_game(
+enum backend_error_t start_game(
     int tile_width,
     int tile_height,
     int viewport_width,
@@ -50,16 +50,16 @@ void get_window_configuration(
     float* out_scale
 );
 
-enum error_t get_delta_time(struct context_t* context, float* out_delta_time);
+enum backend_error_t get_delta_time(struct context_t* context, float* out_delta_time);
 
-enum error_t add_tileset(
+enum backend_error_t add_tileset(
     struct context_t* context,
     const char* tileset_path,
     int tile_width, int tile_height,
     int* out_index
 );
 
-enum error_t add_fontset(
+enum backend_error_t add_fontset(
     struct context_t* context,
     const char* tileset_path,
     int tile_width, int tile_height,
@@ -93,12 +93,12 @@ bool is_ascii_mode(const struct context_t* context);
 bool set_ascii_mode(struct context_t* context, bool enabled);
 bool toggle_ascii_mode(struct context_t* context);
 
-enum error_t set_fallback_fontset(
+enum backend_error_t set_fallback_fontset(
     struct context_t* context,
     int fontset_index
 );
 
-enum error_t tileset_map_fallback(
+enum backend_error_t tileset_map_fallback(
     struct context_t* context,
     int tileset_index,
     int sprite_index,
@@ -107,14 +107,14 @@ enum error_t tileset_map_fallback(
     enum color_t ansi_background
 );
 
-enum error_t draw_tile(
+enum backend_error_t draw_tile(
     const struct context_t* context,
     int tileset_index,
     int sprite_index,
     int x, int y
 );
 
-enum error_t draw_printf(
+enum backend_error_t draw_printf(
     const struct context_t* context,
     int fontset_index,
     int x, int y,
@@ -124,7 +124,7 @@ enum error_t draw_printf(
     ...
 );
 
-enum error_t get_executable_directory(const char** out_path);
+enum backend_error_t get_executable_directory(const char** out_path);
 
 enum scancode_t {
     SCANCODE_A = 4,
@@ -234,6 +234,6 @@ enum scancode_t {
     SCANCODE_RWIN = 231
 };
 
-enum error_t key_down(const struct context_t* context, enum scancode_t scancode, bool* out);
-enum error_t key_just_pressed(const struct context_t* context, enum scancode_t scancode, bool* out);
-enum error_t key_just_released(const struct context_t* context, enum scancode_t scancode, bool* out);
+enum backend_error_t key_down(const struct context_t* context, enum scancode_t scancode, bool* out);
+enum backend_error_t key_just_pressed(const struct context_t* context, enum scancode_t scancode, bool* out);
+enum backend_error_t key_just_released(const struct context_t* context, enum scancode_t scancode, bool* out);

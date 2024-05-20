@@ -4,4 +4,8 @@ CMakeCache.txt
 .vscode
 .old
 .vs
+.gdbinit
+.gdbexecute
+__pycache__
+log.txt
 

@@ -1,18 +1,37 @@
 #pragma once
 
+#include <random>
+
 #include "../grid.h"
 #include "../math.h"
 
 enum class RoomTile {
     Wall,
-    Floor,
+    DebugTile,
 };
 
 class IRoomGenerator {
-    virtual Grid<RoomTile> generate(ivec2 size) = 0;
+    virtual Grid<RoomTile> operator()() = 0;
+};
+
+enum class HallwayTile {
+    Hallway,
 };
 
 class HallwayRoomGenerator : public IRoomGenerator {
+    Grid<RoomTile> tiles;
+    std::vector<irect> vertical_hallways;
+    std::vector<irect> horizontal_hallways;
+    std::default_random_engine rng;
+
+    irect get_room_exclusive_area(const irect& rect) const;
+    bool is_valid_room(const irect& rect) const;
+    std::optional<irect> new_room_bounds();
+    irect expand_room(const irect& room) const;
+    void plan_hallways(const irect& room);
+    bool rect_touches_edge(const irect& rect) const;
+
 public:
-    Grid<RoomTile> generate(ivec2 size) override;
+    explicit HallwayRoomGenerator(ivec2 size);
+    Grid<RoomTile> operator()() override;
 };

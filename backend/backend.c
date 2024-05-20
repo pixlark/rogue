@@ -73,7 +73,7 @@ struct context_t {
     uint8_t* this_frame_keyboard_state;
 };
 
-const char *describe_error(enum error_t error) {
+const char *describe_error(enum backend_error_t error) {
     switch (error) {
         case ERROR_OK:
             return "no error";
@@ -148,7 +148,7 @@ static void flush_draw_commands(struct context_t* context) {
     }
 }
 
-enum error_t start_game(
+enum backend_error_t start_game(
     int tile_width,
     int tile_height,
     int viewport_width,
@@ -236,7 +236,16 @@ enum error_t start_game(
         SDL_RenderPresent(context.renderer);
 
         uint64_t frame_time = SDL_GetPerformanceCounter();
-        context.delta_time = (float)(frame_time - context.last_frame_time) / (float)SDL_GetPerformanceFrequency();
+        float delta_time = (float)(frame_time - context.last_frame_time) / (float)SDL_GetPerformanceFrequency();
+        const float desired_frame_time = 1.0 / 60.0;
+        const int minimum_wait_ms = 15;
+        if (delta_time < desired_frame_time) {
+            float remaining_time = desired_frame_time - delta_time;
+            int remaining_ms = (int)(remaining_time * 1000.0);
+            if (remaining_ms >= minimum_wait_ms) {
+                SDL_Delay(remaining_ms);
+            }
+        }
         context.last_frame_time = frame_time;
 
         update_keyboard_state(&context);
@@ -270,7 +279,7 @@ void get_window_configuration(
     }
 }
 
-enum error_t get_delta_time(struct context_t* context, float* out_delta_time) {
+enum backend_error_t get_delta_time(struct context_t* context, float* out_delta_time) {
     if (!context->fully_loaded) {
         return ERROR_INVALID_DURING_LOAD;
     }
@@ -280,7 +289,7 @@ enum error_t get_delta_time(struct context_t* context, float* out_delta_time) {
 }
 
 #include <stdio.h>
-enum error_t add_tileset(
+enum backend_error_t add_tileset(
     struct context_t* context,
     const char* tileset_path,
     int tile_width, int tile_height,
@@ -339,7 +348,7 @@ enum error_t add_tileset(
     return ERROR_OK;
 }
 
-enum error_t add_fontset(
+enum backend_error_t add_fontset(
     struct context_t* context,
     const char* tileset_path,
     int tile_width, int tile_height,
@@ -348,7 +357,7 @@ enum error_t add_fontset(
     int* out_index
 ) {
     int tileset_index;
-    enum error_t err = add_tileset(
+    enum backend_error_t err = add_tileset(
         context,
         tileset_path,
         tile_width, tile_height,
@@ -386,7 +395,7 @@ bool toggle_ascii_mode(struct context_t* context) {
     return context->configuration.ascii_mode = !context->configuration.ascii_mode;
 }
 
-enum error_t set_fallback_fontset(
+enum backend_error_t set_fallback_fontset(
     struct context_t* context,
     int fontset_index
 ) {
@@ -398,7 +407,7 @@ enum error_t set_fallback_fontset(
     return ERROR_OK;
 }
 
-enum error_t tileset_map_fallback(
+enum backend_error_t tileset_map_fallback(
     struct context_t* context,
     int tileset_index,
     int sprite_index,
@@ -447,16 +456,12 @@ static SDL_Rect get_tile_dest_rect(
     return (SDL_Rect){ dest_x, dest_y, dest_w, dest_h };
 }
 
-static enum error_t draw_tile_internal(
+static enum backend_error_t draw_tile_internal(
     const struct context_t* context,
     int tileset_index,
     int sprite_index,
     int x, int y
 ) {
-    if (!context->fully_loaded) {
-        return ERROR_INVALID_DURING_LOAD;
-    }
-
     int viewport_width = context->configuration.viewport_width,
         viewport_height = context->configuration.viewport_height;
     if (x < 0 || x >= viewport_width || y < 0 || y >= viewport_height) {
@@ -485,7 +490,7 @@ static enum error_t draw_tile_internal(
     return ERROR_OK;
 }
 
-static enum error_t draw_character_internal(
+static enum backend_error_t draw_character_internal(
     const struct context_t* context,
     int fontset_index,
     char character,
@@ -494,12 +499,16 @@ static enum error_t draw_character_internal(
     enum color_t background
 );
 
-enum error_t draw_tile(
+enum backend_error_t draw_tile(
     const struct context_t* context,
     int tileset_index,
     int sprite_index,
     int x, int y
 ) {
+    if (!context->fully_loaded) {
+        return ERROR_INVALID_DURING_LOAD;
+    }
+
     if (context->configuration.ascii_mode) {
         if (context->fallback_fontset == -1) {
             return ERROR_NO_FALLBACK_FONTSET;
@@ -599,7 +608,7 @@ static SDL_Color get_sdl_color(enum color_t color) {
     }
 }
 
-static enum error_t draw_character_internal(
+static enum backend_error_t draw_character_internal(
     const struct context_t* context,
     int fontset_index,
     char character,
@@ -649,7 +658,7 @@ static enum error_t draw_character_internal(
     return ERROR_OK;
 }
 
-enum error_t draw_printf(
+enum backend_error_t draw_printf(
     const struct context_t* context,
     int fontset_index,
     int x, int y,
@@ -702,7 +711,7 @@ enum error_t draw_printf(
 }
 
 static const char* executable_directory = NULL;
-enum error_t get_executable_directory(const char** out_path) {
+enum backend_error_t get_executable_directory(const char** out_path) {
     if (executable_directory == NULL) {
         executable_directory = SDL_GetBasePath();
         if (executable_directory == NULL) {
@@ -715,7 +724,7 @@ enum error_t get_executable_directory(const char** out_path) {
     return ERROR_OK;
 }
 
-enum error_t key_down(const struct context_t* context, enum scancode_t scancode, bool* out) {
+enum backend_error_t key_down(const struct context_t* context, enum scancode_t scancode, bool* out) {
     if (!context->fully_loaded) {
         return ERROR_INVALID_DURING_LOAD;
     }
@@ -724,7 +733,7 @@ enum error_t key_down(const struct context_t* context, enum scancode_t scancode,
     return ERROR_OK;
 }
 
-enum error_t key_just_pressed(const struct context_t* context, enum scancode_t scancode, bool* out) {
+enum backend_error_t key_just_pressed(const struct context_t* context, enum scancode_t scancode, bool* out) {
     if (!context->fully_loaded) {
         return ERROR_INVALID_DURING_LOAD;
     }
@@ -733,7 +742,7 @@ enum error_t key_just_pressed(const struct context_t* context, enum scancode_t s
     return ERROR_OK;
 }
 
-enum error_t key_just_released(const struct context_t* context, enum scancode_t scancode, bool* out) {
+enum backend_error_t key_just_released(const struct context_t* context, enum scancode_t scancode, bool* out) {
     if (!context->fully_loaded) {
         return ERROR_INVALID_DURING_LOAD;
     }

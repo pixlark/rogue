@@ -1,5 +1,8 @@
 #include "ascii.h"
 
+FallbackInitializer::FallbackInitializer(Context& context, int tileset)
+    : context(context), tileset(tileset) {}
+
 void FallbackInitializer::operator()(int sprite_index, char character, color_t foreground, color_t background) {
     this->context.tileset_map_fallback(this->tileset, sprite_index, character, foreground, background);
 }

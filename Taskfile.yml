@@ -1,0 +1,44 @@
+version: '3'
+
+tasks:
+  clean:
+    cmds:
+      - cmake --build build --target clean
+      - cmake -E rm -Rf ./build/rogue
+
+  configure:
+    cmds:
+      - cmake -B build -G Ninja
+
+  build:
+    deps: [configure]
+    cmds:
+      - cmake --build build --target install
+  build-*:
+    deps: [configure]
+    cmds:
+      - cmake --build build --target {{index .MATCH 0}}
+
+  clean-build:
+    cmds:
+      - task: clean
+      - task: configure
+      - cmake --build build --target install
+  clean-build-*:
+    cmds:
+      - task: clean
+      - task: configure
+      - cmake --build build --target {{index .MATCH 0}}
+
+  run:
+    deps: [build]
+    cmds:
+      - ./build/rogue/bin/core
+  run-*:
+    deps: [build]
+    cmds:
+      - ./build/rogue/bin/{{index .MATCH 0}}
+  test:
+    deps: [build]
+    cmds:
+     - ./build/rogue/bin/unit-tests

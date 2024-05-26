@@ -2,8 +2,8 @@
 
 #include <random>
 
-#include "../grid.h"
-#include "../math.h"
+#include <common/grid.h>
+#include <common/math.h>
 
 enum class RoomTile {
     Wall,

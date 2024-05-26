@@ -1,6 +1,5 @@
 #include <format>
 
-// NOLINTNEXTLINE(modernize-deprecated-headers)
 #include "math.h"
 
 //

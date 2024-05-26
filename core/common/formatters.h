@@ -5,7 +5,6 @@
 template<typename T>
     requires std::formattable<T, char>
 struct std::formatter<std::optional<T>> : std::formatter<std::string> {
-    // template <typename Context>
     template <class FormatContext>
     auto format(std::optional<T> opt, FormatContext& context) const {
         if (opt.has_value()) {

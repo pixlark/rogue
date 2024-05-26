@@ -1,22 +1,34 @@
 #pragma once
 
-#include <stdexcept>
-#include <print>
-#include <string>
-#include <format>
-#include <utility>
-#include <vector>
-
-#include <gsl/gsl>
-
-#include "context.h"
-#include "math.h"
-#include "world.h"
-#include "screen.h"
+#include <core/ascii.h>
+#include <common/services.h>
+#include <common/grid.h>
+#include <core/screen.h>
 
 enum class Sprite {
     DemonWizard = 5,
     Floor = 1378,
+};
+
+class IWorldService {
+};
+
+enum class Wall {
+    DungeonRock,
+    DebugTile,
+    Count,
+};
+
+int wall_sprite_index(Wall wall);
+
+class World : public IWorldService {
+    Grid<Wall> walls;
+
+public:
+    World();
+
+    static void initialize_sprites(FallbackInitializer& fallback_initializer);
+    void draw(Screen& screen);
 };
 
 class Game {

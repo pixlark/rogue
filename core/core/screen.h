@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "math.h"
+#include <common/math.h>
 
 class ScreenManager;
 

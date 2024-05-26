@@ -8,6 +8,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 set(CMAKE_CXX_EXTENSIONS false)
 
 #
+# GSL
+#
+
+include(FetchContent)
+
+FetchContent_Declare(GSL
+    GIT_REPOSITORY "git@github.com:microsoft/GSL.git"
+    GIT_TAG "v4.0.0"
+    GIT_SHALLOW true
+)
+
+FetchContent_MakeAvailable(GSL)
+
+#
 # common functions
 #
 
@@ -17,7 +31,7 @@ function(target_enable_warnings target)
     target_compile_options(${target}
         PRIVATE
             "$<${gcc_api}:-Wall;-Werror>"
-            "$<${msvc_api}:-W3;-WX>"
+            "$<${msvc_api}:-W3>" # ;-Wx @temporary
     )
 endfunction()
 
@@ -76,45 +90,18 @@ function(target_enable_cxx23 target)
     endif()
 endfunction()
 
-#
 # backend
-#
-
 add_subdirectory(backend)
 
-#
-# backend-test
-#
+# demos
+add_subdirectory(demos)
 
-add_subdirectory(samples)
+# test-platform
+add_subdirectory(test-platform)
 
-#
-# c++ std module
-#
-
-# I was not able to get this working...
-# add_subdirectory(cxx_std)
-
-#
 # core
-#
-
 add_subdirectory(core)
 
-#
 # resources
-#
-
 install(DIRECTORY resources DESTINATION .)
 
-#
-# compile_commands
-#
-
-# add_custom_target(reformat-compile-database
-#     ALL
-#     COMMAND cmake -E cat build/compile-commands.json | python scripts/reformat-compile-database.py > build/compile-commands.json
-#     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#     COMMENT ${CMAKE_CURRENT_SOURCE_DIR}
-# )
-# add_dependencies(reformat-compile-database all)

@@ -6,7 +6,7 @@
 
 #define TRY(function_call)                              \
     do {                                                \
-        enum backend_error_t err = function_call;               \
+        enum backend_error_t err = function_call;       \
         if (err != ERROR_OK) {                          \
             printf("error: %s\n", describe_error(err)); \
             abort();                                    \

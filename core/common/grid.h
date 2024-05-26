@@ -16,7 +16,7 @@
 #include <gsl/gsl>
 
 #include "math.h"
-#include "util.h"
+#include "stack_vector.h"
 
 enum class Cardinals {
     FourWay,
@@ -135,13 +135,13 @@ public:
         if (!this->in_bounds(origin) || is_solid(origin)) {
             return;
         }
-        
+
         std::deque<ivec2> queue{ origin };
         Grid<bool> visited(this->get_size());
 
         visited.set(origin, true);
         visitor(std::nullopt, origin);
-        
+
         bool search_cancelled = false;
         while (!queue.empty() && !search_cancelled) {
             ivec2 pos = queue.front();
@@ -211,11 +211,16 @@ public:
         } comparer;
         std::priority_queue<pair_t, std::vector<pair_t>, decltype(comparer)> queue(comparer);
 
+        // the frontier is just a grid that tracks all tiles currently
+        // in the priority queue
+        Grid<bool> frontier(this->get_size());
+
         // We start on the starting node, which has a distance and score
         // of zero (because it costs nothing to get there)
         distances.set(start, 0);
         scores.set(start, 0);
         queue.emplace(0, start);
+        frontier.set(start, true);
 
         while (!queue.empty()) {
             // Take the next node from the queue (the tile with the smallest score)
@@ -226,6 +231,7 @@ public:
                 score = pair.first;
                 pos = pair.second;
                 queue.pop();
+                frontier.remove(pos);
             }
 
             if (pos.x == end.x && pos.y == end.y) {
@@ -278,9 +284,13 @@ public:
 
                 if (new_neighbor_distance < previous_neighbor_distance) {
                     distances.set(neighbor, new_neighbor_distance);
-                    scores.set(neighbor, new_neighbor_distance); // TODO: heuristic
+                    float new_neighbor_score = new_neighbor_distance;
+                    scores.set(neighbor, new_neighbor_score); // TODO: heuristic
 
-                    // ...
+                    if (frontier.get(neighbor) == std::nullopt) {
+                        queue.emplace(new_neighbor_score, neighbor);
+                        frontier.set(neighbor, true);
+                    }
                 }
             }
         }

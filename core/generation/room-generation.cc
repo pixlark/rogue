@@ -11,8 +11,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include "../formatters.h"
-#include "../logging.h"
+#include <common/formatters.h>
+#include <common/logging.h>
 #include "room-generation.h"
 
 //
